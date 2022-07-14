@@ -44,6 +44,62 @@ const registerUser = async (req, res) => {
     }
 }
 
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body
+        console.log(email, password)
+        // check if all required data was submitted
+        if (!email || !password) {
+            const error = new Error("Please enter all required information");
+            error.status = 400
+            throw error
+        }
+
+        // check if user exist
+        const user = await userModel.findOne({ email: req.body.email })
+        if (!user) {
+            const error = new Error("Wrong credentials")
+            error.status = 404
+            throw error
+        }
+
+        // check if password match
+        const passwordMatch = await bcrypt.compare(password, user.password)
+        if (!passwordMatch) {
+            const error = new Error("Wrong password")
+            error.status = 404
+            throw error
+        }
+
+        // generate jwt for created user
+        const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRE
+        })
+
+        return res.status(200).cookie("token", token).json({ message: "User loging was successfully", code: 200, data: user })
+
+    } catch (error) {
+        return res.status(error.status).json({ message: error.message, code: error.status })        
+    }
+}
+
+const getAuthUser = async (req, res) => {
+    try {
+        const user = await userModel.findOne({ email: req.user.email })
+        if (!user) {
+            const error = new Error("User not found")
+            error.status = 404
+            throw error
+        }
+
+        return res.status(200).json({ data: user })
+    } catch (error) {
+        return res.status(error.status).json({ message: error.message, code: error.status })
+    }
+}
+
 module.exports = {
-    registerUser
+    registerUser,
+    loginUser,
+    getAuthUser
 }

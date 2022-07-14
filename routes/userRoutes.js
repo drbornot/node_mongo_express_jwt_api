@@ -9,12 +9,8 @@ const userController = require("../controllers/userController")
 
 router.post('/register', userController.registerUser)
 
-router.post('/login', async (req, res) => {
-    
-})
+router.post('/login', userController.loginUser)
 
-router.get('/user', isAuthenticated, async (req, res) => {
-    
-})
+router.get('/user', isAuthenticated, userController.getAuthUser)
 
 module.exports = router
