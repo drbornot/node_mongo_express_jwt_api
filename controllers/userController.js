@@ -5,8 +5,9 @@ const bcrypt = require("bcryptjs")
 const registerUser = async (req, res) => {
     try {
         
-        // check the incoming data
         const { name, email, password } = req.body
+
+        // check if all required data were submitted
         if (!name || !email || !password) {
             const error = new Error("Please enter all required information")
             error.status = 400
@@ -47,7 +48,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body
-        console.log(email, password)
+
         // check if all required data was submitted
         if (!email || !password) {
             const error = new Error("Please enter all required information");
@@ -75,7 +76,7 @@ const loginUser = async (req, res) => {
         const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: process.env.JWT_EXPIRE
         })
-
+        
         return res.status(200).cookie("token", token).json({ message: "User loging was successfully", code: 200, data: user })
 
     } catch (error) {
@@ -85,7 +86,10 @@ const loginUser = async (req, res) => {
 
 const getAuthUser = async (req, res) => {
     try {
+        
         const user = await userModel.findOne({ email: req.user.email })
+        
+        // check if user already exists
         if (!user) {
             const error = new Error("User not found")
             error.status = 404
@@ -98,8 +102,18 @@ const getAuthUser = async (req, res) => {
     }
 }
 
+const logoutUser = async (req, res) => {
+    const { token } = req.cookies
+    if (token) {
+        return res.status(200).clearCookie("token").json({ message: "User logout successfully", code: 200 })
+    }
+
+    return res.status(201).json({ message: "User was already logged out", code: 201 })
+}
+
 module.exports = {
     registerUser,
     loginUser,
-    getAuthUser
+    getAuthUser,
+    logoutUser
 }
