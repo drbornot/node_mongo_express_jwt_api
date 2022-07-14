@@ -18,8 +18,8 @@ const userSchema = mongoose.Schema({
     },
     token: {
         type: String
-    }
-})
+    },
+}, { timestamps: true })
 
 const userModel = mongoose.model('user', userSchema)
 module.exports = userModel
